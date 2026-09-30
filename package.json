@@ -1,0 +1,37 @@
+{
+  "name": "inventory-manager",
+  "version": "1.0.0",
+  "description": "Inventory Manager — track stock for small retail shops",
+  "main": "main.js",
+  "author": "Shop Owner",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64 --publish never"
+  },
+  "build": {
+    "appId": "com.inventorymanager.app",
+    "productName": "Inventory Manager",
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Inventory Manager"
+    },
+    "files": [
+      "**/*",
+      "!.git/**"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^36.9.5",
+    "electron-builder": "^26.0.12"
+  },
+  "allowScripts": {
+    "electron@36.9.5": true,
+    "electron-winstaller@5.4.0": true
+  }
+}

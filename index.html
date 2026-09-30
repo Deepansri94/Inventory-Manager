@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="logo">
+      <span class="shop-name-main">📦 Inventory</span>
+      <span class="shop-name-sub">Manager</span>
+    </div>
+    <ul>
+      <li class="nav-item active" data-page="dashboard">📊 Dashboard</li>
+      <li class="nav-item" data-page="inventory">📦 Inventory</li>
+      <li class="nav-item" data-page="purchases">🛒 Purchases</li>
+      <li class="nav-item" data-page="transactions">💰 Sales</li>
+      <li class="nav-item" data-page="customers">👥 Customers</li>
+      <li class="nav-item" data-page="settings">⚙️ Settings</li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="page active">
+      <h2>Dashboard</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-label">Total Products</span><span class="stat-value" id="stat-products">0</span></div>
+        <div class="stat-card"><span class="stat-label">Today's Revenue</span><span class="stat-value" id="stat-today">₹0</span></div>
+        <div class="stat-card"><span class="stat-label">Total Revenue</span><span class="stat-value" id="stat-revenue">₹0</span></div>
+        <div class="stat-card"><span class="stat-label">⚠️ Total Unpaid</span><span class="stat-value" id="stat-unpaid" style="color:#dc2626">₹0</span></div>
+        <div class="stat-card"><span class="stat-label">🔴 Low Stock Items</span><span class="stat-value" id="stat-lowstock" style="color:#d97706">0</span></div>
+      </div>
+
+      <h3>Low Stock Alerts</h3>
+      <table class="data-table" id="lowstock-table">
+        <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Action</th></tr></thead>
+        <tbody id="lowstock-body"></tbody>
+      </table>
+
+      <h3>Recent Sales</h3>
+      <table class="data-table" id="recent-txns-table">
+        <thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody id="recent-txns-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Inventory -->
+    <section id="inventory" class="page">
+      <h2>Inventory</h2>
+      <button class="btn btn-primary" onclick="openModal('product-modal')">+ Add Product</button>
+      <table class="data-table" id="products-table">
+        <thead><tr><th>Name</th><th>Category</th><th>Price (₹)</th><th>Stock</th><th>Unit</th><th>Actions</th></tr></thead>
+        <tbody id="products-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Purchases -->
+    <section id="purchases" class="page">
+      <h2>Purchases</h2>
+      <button class="btn btn-primary" onclick="openModal('purchase-modal')">+ Record Purchase</button>
+      <table class="data-table" id="purchases-table">
+        <thead><tr><th>Date</th><th>Supplier</th><th>Items</th><th>Total Cost</th></tr></thead>
+        <tbody id="purchases-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Sales / Transactions -->
+    <section id="transactions" class="page">
+      <h2>Sales</h2>
+      <div class="txn-toolbar">
+        <button class="btn btn-primary" onclick="openModal('txn-modal')">+ New Sale</button>
+        <div class="txn-filters">
+          <button class="filter-btn active" onclick="setTxnFilter('all', this)">All</button>
+          <button class="filter-btn" onclick="setTxnFilter('this_month', this)">This Month</button>
+          <button class="filter-btn" onclick="setTxnFilter('last_month', this)">Last Month</button>
+          <button class="filter-btn" onclick="setTxnFilter('custom', this)">Custom</button>
+        </div>
+        <div id="txn-date-range" class="hidden txn-date-range">
+          <input type="date" id="txn-from-date" />
+          <span>to</span>
+          <input type="date" id="txn-to-date" />
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:.85rem" onclick="applyCustomFilter()">Apply</button>
+        </div>
+        <button class="btn btn-outline" onclick="downloadTransactions()">⬇️ Download CSV</button>
+      </div>
+      <div id="txn-summary" class="txn-summary"></div>
+      <table class="data-table" id="txns-table">
+        <thead><tr><th>Date</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="txns-body"></tbody>
+      </table>
+      <div class="pagination" id="txn-pagination"></div>
+    </section>
+
+    <!-- Customers -->
+    <section id="customers" class="page">
+      <h2>Customers</h2>
+      <button class="btn btn-primary" onclick="openModal('customer-modal')">+ Add Customer</button>
+      <table class="data-table" id="customers-table">
+        <thead><tr><th>Name</th><th>Phone</th><th>Unpaid Balance</th><th>Actions</th></tr></thead>
+        <tbody id="customers-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="page">
+      <h2>⚙️ Settings</h2>
+      <div class="card settings-card">
+        <h3>Shop Information</h3>
+        <div class="form-row"><label>Shop Name</label><input type="text" id="s-name" placeholder="e.g. Sri Murugan Stores" /></div>
+        <div class="form-row"><label>Phone Number</label><input type="tel" id="s-phone" placeholder="10-digit mobile" /></div>
+        <div class="form-row"><label>Address Line 1</label><input type="text" id="s-addr1" placeholder="Door No, Street" /></div>
+        <div class="form-row"><label>Address Line 2</label><input type="text" id="s-addr2" placeholder="Area, Landmark" /></div>
+        <div class="form-row"><label>City</label><input type="text" id="s-city" placeholder="e.g. Chennai" /></div>
+        <div class="form-row"><label>State &amp; PIN</label><input type="text" id="s-state" placeholder="e.g. Tamil Nadu - 600001" /></div>
+        <div class="form-row"><label>UPI ID</label><input type="text" id="s-upi" placeholder="e.g. shopname@upi" /></div>
+        <div class="form-row"><label>GSTIN <span style="color:#94a3b8;font-weight:400">(optional)</span></label><input type="text" id="s-gst" placeholder="GST Number" /></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+        <div id="settings-saved" class="hidden" style="margin-top:12px;color:#16a34a;font-weight:600">✅ Settings saved.</div>
+      </div>
+
+      <div class="card settings-card" style="margin-top:20px">
+        <h3>App Update</h3>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="check-update-btn" onclick="checkForAppUpdate()">🔄 Check for Update</button>
+        </div>
+        <div id="update-status" style="margin-top:10px;font-size:.88rem"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Product Modal -->
+  <div class="modal-overlay hidden" id="product-modal">
+    <div class="modal">
+      <h3 id="product-modal-title">Add Product</h3>
+      <input type="hidden" id="edit-product-id" />
+      <div class="form-row"><label>Product Name *</label><input type="text" id="p-name" placeholder="e.g. Rice 1kg" /></div>
+      <div class="form-row"><label>Category</label>
+        <select id="p-category">
+          <option>Groceries</option>
+          <option>Beverages</option>
+          <option>Snacks</option>
+          <option>Household</option>
+          <option>Stationery</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Selling Price (₹) *</label><input type="number" id="p-price" min="0" step="0.5" placeholder="0.00" /></div>
+      <div class="form-row"><label>Unit</label><input type="text" id="p-unit" placeholder="e.g. kg, piece, packet" /></div>
+      <div class="form-row"><label>Current Stock *</label><input type="number" id="p-stock" min="0" placeholder="0" /></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+        <button class="btn btn-outline" onclick="closeModal('product-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchase Modal -->
+  <div class="modal-overlay hidden" id="purchase-modal">
+    <div class="modal modal-wide">
+      <h3>Record Purchase</h3>
+      <div class="form-row"><label>Supplier Name</label><input type="text" id="pur-supplier" placeholder="e.g. Wholesale Mart" /></div>
+      <div id="pur-items-list"></div>
+      <button class="btn btn-secondary" onclick="addPurchaseItem()">+ Add Item</button>
+      <div class="bill-total">Total Cost: ₹<span id="pur-total-val">0.00</span></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="savePurchase()">Save Purchase</button>
+        <button class="btn btn-outline" onclick="closeModal('purchase-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sale / Transaction Modal -->
+  <div class="modal-overlay hidden" id="txn-modal">
+    <div class="modal modal-wide">
+      <h3>New Sale</h3>
+      <div class="form-row"><label>Customer</label>
+        <select id="txn-customer"><option value="">-- Walk-in / Select --</option></select>
+      </div>
+      <div id="txn-items-list"></div>
+      <button class="btn btn-secondary" onclick="addTxnItem()">+ Add Item</button>
+      <div class="bill-total">Total: ₹<span id="txn-total-val">0.00</span></div>
+      <div class="form-row"><label>Payment Status</label>
+        <div class="paid-toggle-row">
+          <button type="button" class="paid-toggle active" id="txn-paid-btn" onclick="setTxnPaidStatus('paid')">✅ Paid</button>
+          <button type="button" class="paid-toggle unpaid" id="txn-unpaid-btn" onclick="setTxnPaidStatus('unpaid')">❌ Unpaid</button>
+        </div>
+        <input type="hidden" id="txn-paid-status" value="paid" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveTransaction()">Save Sale</button>
+        <button class="btn btn-outline" onclick="closeModal('txn-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Modal -->
+  <div class="modal-overlay hidden" id="customer-modal">
+    <div class="modal">
+      <h3 id="customer-modal-title">Add Customer</h3>
+      <input type="hidden" id="edit-customer-id" />
+      <div class="form-row"><label>Name *</label><input type="text" id="c-name" placeholder="Full Name" /></div>
+      <div class="form-row"><label>Phone *</label><input type="tel" id="c-phone" placeholder="10-digit mobile" /></div>
+      <div class="form-row"><label>Email</label><input type="email" id="c-email" placeholder="Email (optional)" /></div>
+      <div class="form-row"><label>Address</label><input type="text" id="c-address" placeholder="Address (optional)" /></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveCustomer()">Save</button>
+        <button class="btn btn-outline" onclick="closeModal('customer-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ledger Modal -->
+  <div class="modal-overlay hidden" id="ledger-modal">
+    <div class="modal modal-wide">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 id="ledger-modal-title">📒 Unpaid Ledger</h3>
+        <button class="btn-danger" onclick="closeModal('ledger-modal')">✕</button>
+      </div>
+      <div id="ledger-entries"></div>
+      <div class="kata-total-row">
+        <span>Total Unpaid:</span>
+        <span id="ledger-total" class="kata-total-amt">₹0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restock Modal -->
+  <div class="modal-overlay hidden" id="restock-modal">
+    <div class="modal">
+      <h3 id="restock-modal-title">Adjust Stock</h3>
+      <input type="hidden" id="restock-product-id" />
+      <div class="form-row"><label>Current Stock</label><input type="number" id="restock-current" disabled /></div>
+      <div class="form-row"><label>Add Quantity</label><input type="number" id="restock-qty" min="1" placeholder="e.g. 50" /></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveRestock()">Update Stock</button>
+        <button class="btn btn-outline" onclick="closeModal('restock-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
