@@ -29,11 +29,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Approve Electron install scripts
-        run: |
-          npm install-scripts approve electron@36.9.5
-          npm install-scripts approve electron-winstaller@5.4.0
-
       - name: Set version in package.json
         shell: bash
         run: |
